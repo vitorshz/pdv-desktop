@@ -1,9 +1,11 @@
 package br.unipar.models;
 
+import java.math.BigDecimal;
+
 public class Produto {
     private Long id;
     private String descricao;
-    private int valor;
+    private BigDecimal valor;
     private String categoria;
 
     public Long getId() {
@@ -22,11 +24,11 @@ public class Produto {
         this.descricao = descricao;
     }
 
-    public int getValor() {
+    public BigDecimal getValor() {
         return valor;
     }
 
-    public void setValor(int valor) {
+    public void setValor(BigDecimal valor) {
         this.valor = valor;
     }
 
