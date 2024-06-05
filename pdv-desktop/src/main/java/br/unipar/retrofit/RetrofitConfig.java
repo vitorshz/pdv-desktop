@@ -5,7 +5,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
 public class RetrofitConfig {
-    private static final String BASE_URL = "http://localhost:8080/api/";
+    private static final String BASE_URL = "http://localhost:8080/app/";
 
     private static Retrofit retrofitInstance;
 
