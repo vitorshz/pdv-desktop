@@ -84,6 +84,7 @@ public class VendaFrame extends javax.swing.JFrame {
         jLabel5 = new javax.swing.JLabel();
         jTextField2 = new javax.swing.JTextField();
         btnRemover = new javax.swing.JButton();
+        observacaotextfield = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -250,19 +251,28 @@ public class VendaFrame extends javax.swing.JFrame {
             }
         });
 
+        observacaotextfield.setHorizontalAlignment(javax.swing.JTextField.LEFT);
+        observacaotextfield.setText("digite oque deseja");
+        observacaotextfield.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                observacaotextfieldActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
                 .addGap(12, 12, 12)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                    .addGroup(jPanel4Layout.createSequentialGroup()
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(observacaotextfield)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel4Layout.createSequentialGroup()
                         .addComponent(jLabel4)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(btnRemover))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
+                    .addGroup(jPanel4Layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
@@ -281,7 +291,9 @@ public class VendaFrame extends javax.swing.JFrame {
                     .addComponent(btnRemover))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 121, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(observacaotextfield, javax.swing.GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
                     .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -358,12 +370,16 @@ public class VendaFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_jTextField2ActionPerformed
 
     private void btnRemoverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoverActionPerformed
-        // TODO add your handling code here:
+      RemoveritemVenda();
     }//GEN-LAST:event_btnRemoverActionPerformed
 
     private void btnAddItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddItemActionPerformed
 //        adicionarItemVenda();
     }//GEN-LAST:event_btnAddItemActionPerformed
+
+    private void observacaotextfieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_observacaotextfieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_observacaotextfieldActionPerformed
     
     private void listarClientes() {
         apiService.listarClientes().enqueue(new Callback<List<Cliente>>() {
@@ -426,7 +442,10 @@ public class VendaFrame extends javax.swing.JFrame {
 
     
 
-
+    private void RemoveritemVenda(){
+        int rowselected = itemVendaModel.getSelectedRow();
+        itensVendaModel.removeRow(rowselected);
+    }
     private void atualizarTabelaClientes(List<Cliente> clientes) {
         String[] colunas = {"ID", "Nome", "Telefone", "Email"};
         Object[][] dados = new Object[clientes.size()][4];
@@ -495,9 +514,8 @@ public class VendaFrame extends javax.swing.JFrame {
         }
 
         Venda venda = new Venda();
-        venda.setObservacoes(null);
+        venda.setObservacoes(observacaotextfield.getText());
         venda.setData(LocalDate.now());
-        venda.setTotal(totalVenda);
         venda.setClienteId(cliente.getId());
 
         apiService.criarVenda(venda).enqueue(new Callback<Venda>() {
@@ -661,6 +679,7 @@ public class VendaFrame extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
+    private javax.swing.JTextField observacaotextfield;
     private javax.swing.JTable produtosTable;
     // End of variables declaration//GEN-END:variables
 }
