@@ -1,12 +1,21 @@
 package br.unipar.models;
 
+import com.google.gson.annotations.SerializedName;
+import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.List;
 
-public class Produto {
+public class Produto implements Serializable {
+    @SerializedName("id")
     private Long id;
+    @SerializedName("descricao")
     private String descricao;
+    @SerializedName("valor")
     private BigDecimal valor;
+    @SerializedName("categoria")
     private String categoria;
+    @SerializedName("itensVenda")
+    private List<ItemVenda> itensVenda;
 
     public Long getId() {
         return id;
@@ -39,4 +48,13 @@ public class Produto {
     public void setCategoria(String categoria) {
         this.categoria = categoria;
     }
+
+    public List<ItemVenda> getItensVenda() {
+        return itensVenda;
+    }
+
+    public void setItensVenda(List<ItemVenda> itensVenda) {
+        this.itensVenda = itensVenda;
+    }
+    
 }

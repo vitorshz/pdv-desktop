@@ -5,11 +5,11 @@ import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
 public class RetrofitConfig {
-    private static final String BASE_URL = "http://localhost:8080/app/";
+    private static final String BASE_URL = "http://localhost:8080/";
 
     private static Retrofit retrofitInstance;
 
-    private static Retrofit getRetrofitInstance() {
+    public static Retrofit getRetrofitInstance() {
         if (retrofitInstance == null) {
             retrofitInstance = new Retrofit.Builder()
                     .baseUrl(BASE_URL)

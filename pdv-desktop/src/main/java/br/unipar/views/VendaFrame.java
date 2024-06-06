@@ -8,7 +8,9 @@ import br.unipar.models.Cliente;
 import br.unipar.models.ItemVenda;
 import br.unipar.models.Produto;
 import br.unipar.models.Venda;
+import br.unipar.retrofit.RetrofitConfig;
 import br.unipar.services.ApiService;
+import java.awt.BorderLayout;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -21,7 +23,9 @@ import java.util.Timer;
 import java.util.TimerTask;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -37,16 +41,19 @@ public class VendaFrame extends javax.swing.JFrame {
     private List<Cliente> clientes;
     private List<Produto> produtos;
     private DefaultTableModel itensVendaModel;
-
+    private DefaultTableModel produtosTableModel;
     
     /**
      * Creates new form VendaFrame
      */
     public VendaFrame() {
         initComponents();
+        apiService = RetrofitConfig.getApiService();
+        
         listarClientes();
         listarProdutos();
         refreshListas();
+
     }
 
     /**
@@ -339,11 +346,11 @@ public class VendaFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_jTextField1ActionPerformed
 
     private void btnAddClienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddClienteActionPerformed
-        adicionarCliente();
+        
     }//GEN-LAST:event_btnAddClienteActionPerformed
 
     private void btnFimVendaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFimVendaActionPerformed
-        realizarVenda();
+//        realizarVenda();
     }//GEN-LAST:event_btnFimVendaActionPerformed
 
     private void jTextField2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField2ActionPerformed
@@ -355,7 +362,7 @@ public class VendaFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_btnRemoverActionPerformed
 
     private void btnAddItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddItemActionPerformed
-        adicionarItemVenda();
+//        adicionarItemVenda();
     }//GEN-LAST:event_btnAddItemActionPerformed
     
     private void listarClientes() {
@@ -378,26 +385,46 @@ public class VendaFrame extends javax.swing.JFrame {
     }
 
     private void listarProdutos() {
+        // Simulate an API call to load products
+        ApiService apiService = RetrofitConfig.getApiService();
         apiService.listarProdutos().enqueue(new Callback<List<Produto>>() {
             @Override
             public void onResponse(Call<List<Produto>> call, Response<List<Produto>> response) {
-                if (response.isSuccessful()) {
-                    produtos = response.body();
-                    atualizarTabelaProdutos(produtos);
-                    registrarLog("Obtenção de produtos", "Sucesso");
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Produto> produtos = response.body();
+
+                    SwingUtilities.invokeLater(() -> {
+                        // Criar modelo de tabela com as colunas apropriadas
+                        DefaultTableModel defaultTableModel = new DefaultTableModel();
+                        defaultTableModel.addColumn("Descrição");
+                        defaultTableModel.addColumn("Valor");
+                        defaultTableModel.addColumn("Categoria");
+
+                        // Adicionar os produtos ao modelo da tabela
+                        for (Produto produto : produtos) {
+                            defaultTableModel.addRow(new Object[]{
+                                produto.getDescricao(), produto.getValor(), produto.getCategoria()
+                            });
+                        }
+
+                        // Definir o modelo da tabela de produtos
+                        produtosTable.setModel(defaultTableModel);
+                    });
+                } else {
+                    // Se ocorrer um erro na resposta da API, exibir uma mensagem de erro
+                    JOptionPane.showMessageDialog(VendaFrame.this, "Failed to load products.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
 
             @Override
             public void onFailure(Call<List<Produto>> call, Throwable t) {
-                JOptionPane.showMessageDialog(VendaFrame.this, "Erro ao listar produtos.");
-                registrarLog("Obtenção de produtos", "Falha");
+                // Em caso de falha na chamada à API, exibir uma mensagem de erro
+                JOptionPane.showMessageDialog(VendaFrame.this, "Error: " + t.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
     }
-    private void adicionarCliente(){
-        
-    }
+
+    
 
 
     private void atualizarTabelaClientes(List<Cliente> clientes) {
@@ -405,23 +432,22 @@ public class VendaFrame extends javax.swing.JFrame {
         Object[][] dados = new Object[clientes.size()][4];
         for (int i = 0; i < clientes.size(); i++) {
             Cliente cliente = clientes.get(i);
-            dados[i][0] = cliente.getId();
-            dados[i][1] = cliente.getNome();
-            dados[i][2] = cliente.getTelefone();
-            dados[i][3] = cliente.getEmail();
+            
+            dados[i][0] = cliente.getNome();
+            dados[i][1] = cliente.getTelefone();
+            dados[i][2] = cliente.getEmail();
         }
         clientesTable.setModel(new DefaultTableModel(dados, colunas));
     }
 
     private void atualizarTabelaProdutos(List<Produto> produtos) {
-        String[] colunas = {"ID", "Descrição", "Valor", "Categoria"};
+        String[] colunas = {"Descrição", "Valor", "Categoria"};
         Object[][] dados = new Object[produtos.size()][4];
         for (int i = 0; i < produtos.size(); i++) {
             Produto produto = produtos.get(i);
-            dados[i][0] = produto.getId();
-            dados[i][1] = produto.getDescricao();
-            dados[i][2] = produto.getValor();
-            dados[i][3] = produto.getCategoria();
+            dados[i][0] = produto.getDescricao();
+            dados[i][1] = produto.getValor();
+            dados[i][2] = produto.getCategoria();
         }
         produtosTable.setModel(new DefaultTableModel(dados, colunas));
     }
@@ -549,6 +575,12 @@ public class VendaFrame extends javax.swing.JFrame {
             e.printStackTrace();
         }
     }
+    private void abrirPanel(JPanel panel) {
+        getContentPane().removeAll();
+        getContentPane().add(panel);
+        revalidate();
+        repaint();
+    }
     /**
      * @param args the command line arguments
      */
@@ -583,6 +615,32 @@ public class VendaFrame extends javax.swing.JFrame {
             }
         });
     }
+//    private void loadProdutos(){
+//        ApiService api = RetrofitConfig.getClient().create(ApiService.class);
+//        api.listarProdutos().enqueue(new Callback<List<Produto>>() {
+//            @Override
+//            public void onResponse(Call<List<Produto>> call, Response<List<Produto>> rspns) {
+//                if(rspns.isSuccessful()){
+//                    DefaultTableModel defaultTableModel = new DefaultTableModel();
+//                    defaultTableModel.addColumn("Descricao");
+//                    defaultTableModel.addColumn("Valor");
+//                    defaultTableModel.addColumn("Categoria");
+//                    for(Produto product : rspns.body()){
+//                        defaultTableModel.addRow(new Object[]{
+//                            product.getDescricao(),product.getValor(),product.getCategoria()
+//                        });
+//                    }
+//                    produtosTable.setModel(defaultTableModel);
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<List<Produto>> call, Throwable t) {
+//                JOptionPane.showMessageDialog(VendaFrame.this, "Erro de comunicação: " + t.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+//            }
+//        });
+//        
+//    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddCliente;
