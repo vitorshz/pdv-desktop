@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -50,7 +51,8 @@ public class VendaFrame extends javax.swing.JFrame {
         initComponents();
         apiService = RetrofitConfig.getApiService();
         
-        listarClientes();
+        produtos = new ArrayList<>();
+        
         listarProdutos();
         refreshListas();
 
@@ -374,71 +376,54 @@ public class VendaFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_btnRemoverActionPerformed
 
     private void btnAddItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddItemActionPerformed
-//        adicionarItemVenda();
+        adicionarItemVenda();
     }//GEN-LAST:event_btnAddItemActionPerformed
 
     private void observacaotextfieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_observacaotextfieldActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_observacaotextfieldActionPerformed
-    
-    private void listarClientes() {
-        apiService.listarClientes().enqueue(new Callback<List<Cliente>>() {
-            @Override
-            public void onResponse(Call<List<Cliente>> call, Response<List<Cliente>> response) {
-                if (response.isSuccessful()) {
-                    clientes = response.body();
-                    atualizarTabelaClientes(clientes);
-                    registrarLog("Obtenção de clientes", "Sucesso");
-                }
-            }
 
-            @Override
-            public void onFailure(Call<List<Cliente>> call, Throwable t) {
-                JOptionPane.showMessageDialog(VendaFrame.this, "Erro ao listar clientes.");
-                registrarLog("Obtenção de clientes", "Falha");
-            }
-        });
-    }
 
     private void listarProdutos() {
-        // Simulate an API call to load products
-        ApiService apiService = RetrofitConfig.getApiService();
-        apiService.listarProdutos().enqueue(new Callback<List<Produto>>() {
-            @Override
-            public void onResponse(Call<List<Produto>> call, Response<List<Produto>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    List<Produto> produtos = response.body();
+    // Simulate an API call to load products
+    ApiService apiService = RetrofitConfig.getApiService();
+    apiService.listarProdutos().enqueue(new Callback<List<Produto>>() {
+        @Override
+        public void onResponse(Call<List<Produto>> call, Response<List<Produto>> response) {
+            if (response.isSuccessful() && response.body() != null) {
+                produtos = response.body(); // Atualiza a lista de produtos da classe VendaFrame
 
-                    SwingUtilities.invokeLater(() -> {
-                        // Criar modelo de tabela com as colunas apropriadas
-                        DefaultTableModel defaultTableModel = new DefaultTableModel();
-                        defaultTableModel.addColumn("Descrição");
-                        defaultTableModel.addColumn("Valor");
-                        defaultTableModel.addColumn("Categoria");
+                SwingUtilities.invokeLater(() -> {
+                    // Criar modelo de tabela com as colunas apropriadas
+                    DefaultTableModel defaultTableModel = new DefaultTableModel();
+                    defaultTableModel.addColumn("Descrição");
+                    defaultTableModel.addColumn("Valor");
+                    defaultTableModel.addColumn("Categoria");
 
-                        // Adicionar os produtos ao modelo da tabela
-                        for (Produto produto : produtos) {
-                            defaultTableModel.addRow(new Object[]{
-                                produto.getDescricao(), produto.getValor(), produto.getCategoria()
-                            });
-                        }
+                    // Adicionar os produtos ao modelo da tabela
+                    for (Produto produto : produtos) {
+                        defaultTableModel.addRow(new Object[]{
+                            produto.getDescricao(), produto.getValor(), produto.getCategoria()
+                        });
+                    }
 
-                        // Definir o modelo da tabela de produtos
-                        produtosTable.setModel(defaultTableModel);
-                    });
-                } else {
-                    // Se ocorrer um erro na resposta da API, exibir uma mensagem de erro
-                    JOptionPane.showMessageDialog(VendaFrame.this, "Failed to load products.", "Error", JOptionPane.ERROR_MESSAGE);
-                }
+                    // Definir o modelo da tabela de produtos
+                    produtosTable.setModel(defaultTableModel);
+                });
+                registrarLog("Obtenção dos produtos","Sucesso"); // Corrigido: o log indica sucesso
+            } else {
+                // Se ocorrer um erro na resposta da API, exibir uma mensagem de erro
+                JOptionPane.showMessageDialog(VendaFrame.this, "Failed to load products.", "Error", JOptionPane.ERROR_MESSAGE);
             }
+        }
 
-            @Override
-            public void onFailure(Call<List<Produto>> call, Throwable t) {
-                // Em caso de falha na chamada à API, exibir uma mensagem de erro
-                JOptionPane.showMessageDialog(VendaFrame.this, "Error: " + t.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        });
-    }
+        @Override
+        public void onFailure(Call<List<Produto>> call, Throwable t) {
+            // Em caso de falha na chamada à API, exibir uma mensagem de erro
+            JOptionPane.showMessageDialog(VendaFrame.this, "Error: " + t.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    });
+}
 
     
 
@@ -446,46 +431,34 @@ public class VendaFrame extends javax.swing.JFrame {
         int rowselected = itemVendaModel.getSelectedRow();
         itensVendaModel.removeRow(rowselected);
     }
-    private void atualizarTabelaClientes(List<Cliente> clientes) {
-        String[] colunas = {"ID", "Nome", "Telefone", "Email"};
-        Object[][] dados = new Object[clientes.size()][4];
-        for (int i = 0; i < clientes.size(); i++) {
-            Cliente cliente = clientes.get(i);
-            
-            dados[i][0] = cliente.getNome();
-            dados[i][1] = cliente.getTelefone();
-            dados[i][2] = cliente.getEmail();
-        }
-        clientesTable.setModel(new DefaultTableModel(dados, colunas));
-    }
-
-    private void atualizarTabelaProdutos(List<Produto> produtos) {
-        String[] colunas = {"Descrição", "Valor", "Categoria"};
-        Object[][] dados = new Object[produtos.size()][4];
-        for (int i = 0; i < produtos.size(); i++) {
-            Produto produto = produtos.get(i);
-            dados[i][0] = produto.getDescricao();
-            dados[i][1] = produto.getValor();
-            dados[i][2] = produto.getCategoria();
-        }
-        produtosTable.setModel(new DefaultTableModel(dados, colunas));
-    }
+    
 
     private void adicionarItemVenda() {
         int produtoIndex = produtosTable.getSelectedRow();
-
+        
+        if (produtos.isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Lista de produtos vazia.");
+        return;
+        }
+        
         if (produtoIndex == -1) {
             JOptionPane.showMessageDialog(this, "Selecione um produto.");
             return;
         }
 
         Produto produto = produtos.get(produtoIndex);
-        
+
         int quantidade;
         try {
-            String input = JOptionPane.showInputDialog(this,"Informe a quantidade!");
+            String input = JOptionPane.showInputDialog(this, "Informe a quantidade:");
+            if (input == null || input.isEmpty()) {
+                return; // Se o usuário cancelar ou fornecer uma entrada vazia, saia do método
+            }
             quantidade = Integer.parseInt(input);
-            
+            if (quantidade <= 0) {
+                JOptionPane.showMessageDialog(this, "Quantidade inválida.");
+                return;
+            }
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Quantidade inválida.");
             return;
@@ -494,7 +467,27 @@ public class VendaFrame extends javax.swing.JFrame {
         BigDecimal valorTotal = produto.getValor().multiply(new BigDecimal(quantidade));
 
         // Adicionar o item na tabela de itens da venda
+        if (itensVendaModel == null) {
+            itensVendaModel = new DefaultTableModel();
+            itensVendaModel.addColumn("Descrição");
+            itensVendaModel.addColumn("Quantidade");
+            itensVendaModel.addColumn("Valor Unitário");
+            itensVendaModel.addColumn("Valor Total");
+        }
+
         itensVendaModel.addRow(new Object[]{produto.getDescricao(), quantidade, produto.getValor(), valorTotal});
+        
+        itemVendaModel.setModel(itensVendaModel);
+        
+        // Adicionar o item na lista de itens da venda para posterior envio ao servidor
+        ItemVenda itemVenda = new ItemVenda();
+        itemVenda.setProdutoId(produto.getId()); // Aqui você define o ID do produto
+        itemVenda.setQuantidade(quantidade);
+        itemVenda.setValorUnitario(produto.getValor());
+        itemVenda.setValorTotal(valorTotal);
+        // Adicione o itemVenda à sua lista de itens de venda, que você pode enviar ao servidor quando realizar a venda
+        // listaItensVenda.add(itemVenda);
+        
     }
 
     private void realizarVenda() {
@@ -547,7 +540,7 @@ public class VendaFrame extends javax.swing.JFrame {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                listarClientes();
+                
                 listarProdutos();
             }
         }, 0, 5 * 60 * 1000); // Atualiza a cada 5 minutos (5 * 60 * 1000 ms)
@@ -593,6 +586,7 @@ public class VendaFrame extends javax.swing.JFrame {
             e.printStackTrace();
         }
     }
+    
     private void abrirPanel(JPanel panel) {
         getContentPane().removeAll();
         getContentPane().add(panel);
@@ -633,32 +627,6 @@ public class VendaFrame extends javax.swing.JFrame {
             }
         });
     }
-//    private void loadProdutos(){
-//        ApiService api = RetrofitConfig.getClient().create(ApiService.class);
-//        api.listarProdutos().enqueue(new Callback<List<Produto>>() {
-//            @Override
-//            public void onResponse(Call<List<Produto>> call, Response<List<Produto>> rspns) {
-//                if(rspns.isSuccessful()){
-//                    DefaultTableModel defaultTableModel = new DefaultTableModel();
-//                    defaultTableModel.addColumn("Descricao");
-//                    defaultTableModel.addColumn("Valor");
-//                    defaultTableModel.addColumn("Categoria");
-//                    for(Produto product : rspns.body()){
-//                        defaultTableModel.addRow(new Object[]{
-//                            product.getDescricao(),product.getValor(),product.getCategoria()
-//                        });
-//                    }
-//                    produtosTable.setModel(defaultTableModel);
-//                }
-//            }
-//
-//            @Override
-//            public void onFailure(Call<List<Produto>> call, Throwable t) {
-//                JOptionPane.showMessageDialog(VendaFrame.this, "Erro de comunicação: " + t.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-//            }
-//        });
-//        
-//    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddCliente;

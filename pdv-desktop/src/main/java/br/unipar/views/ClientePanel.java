@@ -5,6 +5,8 @@
 package br.unipar.views;
 
 import br.unipar.models.Cliente;
+import br.unipar.models.Produto;
+import br.unipar.retrofit.RetrofitConfig;
 import br.unipar.services.ApiService;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -15,6 +17,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -34,17 +37,9 @@ public class ClientePanel extends javax.swing.JFrame {
      */
     public ClientePanel() {
         initComponents();
+        refreshListas();
+
         
-                // Atualizar automaticamente os clientes a cada 5 minutos
-        Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                listarClientes();
-
-            }
-        }, 0, 5 * 60 * 1000); // Atualiza a cada 5 minutos (5 * 60 * 1000 ms)
-
     }
 
     /**
@@ -180,35 +175,46 @@ public class ClientePanel extends javax.swing.JFrame {
         });
     }
     private void listarClientes() {
-        apiService.listarClientes().enqueue(new Callback<List<Cliente>>() {
-            @Override
-            public void onResponse(Call<List<Cliente>> call, Response<List<Cliente>> response) {
-                if (response.isSuccessful()) {
-                    clientes = response.body();
-                    atualizarTabelaClientes(clientes);
-                    registrarLog("Obtenção de clientes", "Sucesso");
-                }
-            }
+//        // Simulate an API call to load products
+//        ApiService apiService = RetrofitConfig.getApiService();
+//        apiService.listarProdutos().enqueue(new Callback<List<Produto>>() {
+//            @Override
+//            public void onResponse(Call<List<Produto>> call, Response<List<Produto>> response) {
+//                if (response.isSuccessful() && response.body() != null) {
+//                    List<Produto> produtos = response.body();
+//
+//                    SwingUtilities.invokeLater(() -> {
+//                        // Criar modelo de tabela com as colunas apropriadas
+//                        DefaultTableModel defaultTableModel = new DefaultTableModel();
+//                        defaultTableModel.addColumn("Descrição");
+//                        defaultTableModel.addColumn("Valor");
+//                        defaultTableModel.addColumn("Categoria");
+//
+//                        // Adicionar os produtos ao modelo da tabela
+//                        for (Produto produto : produtos) {
+//                            defaultTableModel.addRow(new Object[]{
+//                                produto.getDescricao(), produto.getValor(), produto.getCategoria()
+//                            });
+//                        }
+//
+//                        // Definir o modelo da tabela de produtos
+//                        produtosTable.setModel(defaultTableModel);
+//                    });
+//                    registrarLog("Obtenção dos clientes", "Falha");
+//                } else {
+//                    // Se ocorrer um erro na resposta da API, exibir uma mensagem de erro
+//                    JOptionPane.showMessageDialog(VendaFrame.this, "Failed to load products.", "Error", JOptionPane.ERROR_MESSAGE);
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<List<Produto>> call, Throwable t) {
+//                // Em caso de falha na chamada à API, exibir uma mensagem de erro
+//                JOptionPane.showMessageDialog(VendaFrame.this, "Error: " + t.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+//            }
+//        });
+    }
 
-            @Override
-            public void onFailure(Call<List<Cliente>> call, Throwable t) {
-                JOptionPane.showMessageDialog(ClientePanel.this, "Erro ao listar clientes.");
-                registrarLog("Obtenção de clientes", "Falha");
-            }
-        });
-    }
-    private void atualizarTabelaClientes(List<Cliente> clientes) {
-        String[] colunas = {"ID", "Nome", "Telefone", "Email"};
-        Object[][] dados = new Object[clientes.size()][4];
-        for (int i = 0; i < clientes.size(); i++) {
-            Cliente cliente = clientes.get(i);
-            dados[i][0] = cliente.getId();
-            dados[i][1] = cliente.getNome();
-            dados[i][2] = cliente.getTelefone();
-            dados[i][3] = cliente.getEmail();
-        }
-        clienteTableModel.setModel(new DefaultTableModel(dados, colunas));
-    }
     private void registrarLog(String operacao, String status) {
         String logFilePath = "log.txt";
         try (PrintWriter writer = new PrintWriter(new FileWriter(logFilePath, true))) {
@@ -227,4 +233,16 @@ public class ClientePanel extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
+
+    private void refreshListas() {
+        // Atualizar automaticamente os clientes a cada 5 minutos
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                listarClientes();
+
+            }
+        }, 0, 5 * 60 * 1000); // Atualiza a cada 5 minutos (5 * 60 * 1000 ms)    }
+    }
 }

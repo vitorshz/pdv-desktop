@@ -16,7 +16,7 @@ public interface ApiService {
     @GET("clientes")
     Call<List<Cliente>> listarClientes();
 
-    @GET("produtos/")
+    @GET("produtos")
     Call<List<Produto>> listarProdutos();
 
     @POST("vendas")
