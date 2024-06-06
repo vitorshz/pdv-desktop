@@ -5,7 +5,6 @@
 package br.unipar.views;
 
 import br.unipar.models.Cliente;
-import br.unipar.models.Produto;
 import br.unipar.retrofit.RetrofitConfig;
 import br.unipar.services.ApiService;
 import java.io.FileWriter;
@@ -19,6 +18,8 @@ import java.util.TimerTask;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -175,44 +176,43 @@ public class ClientePanel extends javax.swing.JFrame {
         });
     }
     private void listarClientes() {
-//        // Simulate an API call to load products
-//        ApiService apiService = RetrofitConfig.getApiService();
-//        apiService.listarProdutos().enqueue(new Callback<List<Produto>>() {
-//            @Override
-//            public void onResponse(Call<List<Produto>> call, Response<List<Produto>> response) {
-//                if (response.isSuccessful() && response.body() != null) {
-//                    List<Produto> produtos = response.body();
-//
-//                    SwingUtilities.invokeLater(() -> {
-//                        // Criar modelo de tabela com as colunas apropriadas
-//                        DefaultTableModel defaultTableModel = new DefaultTableModel();
-//                        defaultTableModel.addColumn("Descrição");
-//                        defaultTableModel.addColumn("Valor");
-//                        defaultTableModel.addColumn("Categoria");
-//
-//                        // Adicionar os produtos ao modelo da tabela
-//                        for (Produto produto : produtos) {
-//                            defaultTableModel.addRow(new Object[]{
-//                                produto.getDescricao(), produto.getValor(), produto.getCategoria()
-//                            });
-//                        }
-//
-//                        // Definir o modelo da tabela de produtos
-//                        produtosTable.setModel(defaultTableModel);
-//                    });
-//                    registrarLog("Obtenção dos clientes", "Falha");
-//                } else {
-//                    // Se ocorrer um erro na resposta da API, exibir uma mensagem de erro
-//                    JOptionPane.showMessageDialog(VendaFrame.this, "Failed to load products.", "Error", JOptionPane.ERROR_MESSAGE);
-//                }
-//            }
-//
-//            @Override
-//            public void onFailure(Call<List<Produto>> call, Throwable t) {
-//                // Em caso de falha na chamada à API, exibir uma mensagem de erro
-//                JOptionPane.showMessageDialog(VendaFrame.this, "Error: " + t.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-//            }
-//        });
+                // Simulate an API call to load products
+       ApiService apiService = RetrofitConfig.getApiService();
+        apiService.listarClientes().enqueue(new Callback<List<Cliente>>() {
+            @Override
+            public void onResponse(Call<List<Cliente>> call, Response<List<Cliente>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<Cliente> clientes = response.body();
+
+                   SwingUtilities.invokeLater(() -> {
+                       // Criar modelo de tabela com as colunas apropriadas
+                        DefaultTableModel defaultTableModel = new DefaultTableModel();
+                        defaultTableModel.addColumn("Nome");
+                       defaultTableModel.addColumn("Telefone");
+                      defaultTableModel.addColumn("Email");
+
+                       // Adicionar os clientes ao modelo da tabela
+                        for (Cliente cliente : clientes) {
+                           defaultTableModel.addRow(new Object[]{
+                               cliente.getNome(), cliente.getTelefone(), cliente.getEmail()
+                           });
+                        }
+                     // Definir o modelo da tabela de clientes
+                        clienteTableModel.setModel(defaultTableModel);                    
+                    });
+                  registrarLog("Obtenção dos clientes", "Falha");
+              } else {
+                   // Se ocorrer um erro na resposta da API, exibir uma mensagem de erro
+                   JOptionPane.showMessageDialog(ClientePanel.this, "Failed to load products.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+           }
+
+           @Override
+            public void onFailure(Call<List<Cliente>> call, Throwable t) {
+                // Em caso de falha na chamada à API, exibir uma mensagem de erro
+                JOptionPane.showMessageDialog(ClientePanel.this, "Error: " + t.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+           }
+       });
     }
 
     private void registrarLog(String operacao, String status) {
@@ -225,6 +225,16 @@ public class ClientePanel extends javax.swing.JFrame {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    public Cliente getClienteSelect(){
+        int select = clienteTableModel.getSelectedRow();
+       if (select == -1) {
+            return null; // Nenhuma linha selecionada
+        }
+        String nome = (String) clienteTableModel.getValueAt(select, 0);
+        String telefone = (String) clienteTableModel.getValueAt(select, 1);
+        String email = (String) clienteTableModel.getValueAt(select, 2);
+        return new Cliente(nome,telefone,email);
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable clienteTableModel;

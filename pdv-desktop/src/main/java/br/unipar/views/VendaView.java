@@ -3,12 +3,7 @@ import br.unipar.models.Cliente;
 import br.unipar.models.ItemVenda;
 import br.unipar.models.Produto;
 import br.unipar.models.Venda;
-import br.unipar.retrofit.RetrofitConfig;
 import br.unipar.services.ApiService;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -26,8 +21,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class VendaView extends JFrame {
     private JTable clientesTable;
