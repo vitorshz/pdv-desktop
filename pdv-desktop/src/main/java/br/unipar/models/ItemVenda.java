@@ -1,14 +1,22 @@
 package br.unipar.models;
 
+import com.google.gson.annotations.SerializedName;
+import java.io.Serializable;
 import java.math.BigDecimal;
 
-public class ItemVenda {
+public class ItemVenda implements Serializable{
+    @SerializedName("id")
     private Long id;
+    @SerializedName("quantidade")
     private int quantidade;
+    @SerializedName("valorUnitario")
     private BigDecimal valorUnitario;
+    @SerializedName("valorTotal")
     private BigDecimal valorTotal;
-    private Long vendaId;
-    private Long produtoId;
+    @SerializedName("fk_Venda_id")
+    private Venda vendaId;
+    @SerializedName("fk_Produto_id")
+    private Produto produtoId;
 
     public Long getId() {
         return id;
@@ -42,19 +50,20 @@ public class ItemVenda {
         this.valorTotal = valorTotal;
     }
 
-    public Long getVendaId() {
+    public Venda getVendaId() {
         return vendaId;
     }
 
-    public void setVendaId(Long vendaId) {
+    public void setVendaId(Venda vendaId) {
         this.vendaId = vendaId;
     }
 
-    public Long getProdutoId() {
+    public Produto getProdutoId() {
         return produtoId;
     }
 
-    public void setProdutoId(Long produtoId) {
+    public void setProdutoId(Produto produtoId) {
         this.produtoId = produtoId;
     }
+    
 }

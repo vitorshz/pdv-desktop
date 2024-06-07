@@ -82,7 +82,6 @@ public class VendaFrame extends javax.swing.JFrame {
         jLabel5 = new javax.swing.JLabel();
         jTextField2 = new javax.swing.JTextField();
         btnRemover = new javax.swing.JButton();
-        observacaotextfield = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -249,22 +248,13 @@ public class VendaFrame extends javax.swing.JFrame {
             }
         });
 
-        observacaotextfield.setHorizontalAlignment(javax.swing.JTextField.LEFT);
-        observacaotextfield.setText("digite oque deseja");
-        observacaotextfield.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                observacaotextfieldActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
+            .addGroup(jPanel4Layout.createSequentialGroup()
                 .addGap(12, 12, 12)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(observacaotextfield)
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel4Layout.createSequentialGroup()
                         .addComponent(jLabel4)
@@ -272,12 +262,12 @@ public class VendaFrame extends javax.swing.JFrame {
                         .addComponent(btnRemover))
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(jPanel4Layout.createSequentialGroup()
                                 .addComponent(jLabel5)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(btnFimVenda, javax.swing.GroupLayout.Alignment.TRAILING))))
+                            .addComponent(btnFimVenda))))
                 .addGap(12, 12, 12))
         );
         jPanel4Layout.setVerticalGroup(
@@ -289,9 +279,7 @@ public class VendaFrame extends javax.swing.JFrame {
                     .addComponent(btnRemover))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(observacaotextfield, javax.swing.GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 125, Short.MAX_VALUE)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
                     .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -368,16 +356,12 @@ public class VendaFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_jTextField2ActionPerformed
 
     private void btnRemoverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoverActionPerformed
-      RemoveritemVenda();
+        RemoveritemVenda();
     }//GEN-LAST:event_btnRemoverActionPerformed
 
     private void btnAddItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddItemActionPerformed
         adicionarItemVenda();
     }//GEN-LAST:event_btnAddItemActionPerformed
-
-    private void observacaotextfieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_observacaotextfieldActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_observacaotextfieldActionPerformed
 
 
     private void listarProdutos() {
@@ -477,7 +461,7 @@ public class VendaFrame extends javax.swing.JFrame {
         
         // Adicionar o item na lista de itens da venda para posterior envio ao servidor
         ItemVenda itemVenda = new ItemVenda();
-        itemVenda.setProdutoId(produto.getId()); // Aqui você define o ID do produto
+        itemVenda.setProdutoId(produto); // Aqui você define o ID do produto
         itemVenda.setQuantidade(quantidade);
         itemVenda.setValorUnitario(produto.getValor());
         itemVenda.setValorTotal(valorTotal);
@@ -503,9 +487,9 @@ public class VendaFrame extends javax.swing.JFrame {
         }
 
         Venda venda = new Venda();
-        venda.setObservacoes(observacaotextfield.getText());
+//        venda.setObservacoes(observacaotextfield.getText()); fazer um JOPtionPane de opcao no fim da venda
         venda.setData(LocalDateTime.now());
-        venda.setClienteId(cliente.getId());
+        venda.setClienteId(cliente);
 
         apiService.criarVenda(venda).enqueue(new Callback<Venda>() {
             @Override
@@ -550,8 +534,8 @@ public class VendaFrame extends javax.swing.JFrame {
 
         if (produto != null) {
             ItemVenda itemVenda = new ItemVenda();
-            itemVenda.setVendaId(venda.getId());
-            itemVenda.setProdutoId(produto.getId());
+            itemVenda.setVendaId(venda);
+            itemVenda.setProdutoId(produto);
             itemVenda.setQuantidade((Integer) itensVendaModel.getValueAt(rowIndex, 1));
             itemVenda.setValorUnitario((BigDecimal) itensVendaModel.getValueAt(rowIndex, 2));
             itemVenda.setValorTotal((BigDecimal) itensVendaModel.getValueAt(rowIndex, 3));
@@ -643,7 +627,6 @@ public class VendaFrame extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
-    private javax.swing.JTextField observacaotextfield;
     private javax.swing.JTable produtosTable;
     // End of variables declaration//GEN-END:variables
 }

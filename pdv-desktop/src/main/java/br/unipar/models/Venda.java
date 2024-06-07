@@ -1,14 +1,21 @@
 package br.unipar.models;
 
+import com.google.gson.annotations.SerializedName;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public class Venda {
+public class Venda implements Serializable{
+    @SerializedName("id")
     private Long id;
+    @SerializedName("observacoes")
     private String observacoes;
+    @SerializedName("data")
     private LocalDateTime data;
+    @SerializedName("total")
     private BigDecimal total;
-    private Long clienteId;
+    @SerializedName("fk_Cliente_id")
+    private Cliente clienteId;
 
     public Long getId() {
         return id;
@@ -42,11 +49,13 @@ public class Venda {
         this.total = total;
     }
 
-    public Long getClienteId() {
+    public Cliente getClienteId() {
         return clienteId;
     }
 
-    public void setClienteId(Long clienteId) {
+    public void setClienteId(Cliente clienteId) {
         this.clienteId = clienteId;
     }
+
+    
 }
