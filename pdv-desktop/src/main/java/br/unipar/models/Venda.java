@@ -1,12 +1,12 @@
 package br.unipar.models;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class Venda {
     private Long id;
     private String observacoes;
-    private LocalDate data;
+    private LocalDateTime data;
     private BigDecimal total;
     private Long clienteId;
 
@@ -26,13 +26,13 @@ public class Venda {
         this.observacoes = observacoes;
     }
 
-    public LocalDate getData() {
+    public LocalDateTime getData() {
         return data;
     }
 
-    public void setData(LocalDate data) {
+    public void setData(LocalDateTime data) {
         this.data = data;
-    }
+    }    
 
     public BigDecimal getTotal() {
         return total;

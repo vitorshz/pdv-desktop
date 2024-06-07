@@ -294,7 +294,7 @@ public class VendaView extends JFrame {
 
         Venda venda = new Venda();
         venda.setObservacoes(observacoes);
-        venda.setData(LocalDate.now());
+        venda.setData(LocalDateTime.now());
         venda.setTotal(totalVenda);
         venda.setClienteId(cliente.getId());
 

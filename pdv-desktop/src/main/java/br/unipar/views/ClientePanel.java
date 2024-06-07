@@ -12,14 +12,13 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -38,9 +37,12 @@ public class ClientePanel extends javax.swing.JFrame {
      */
     public ClientePanel() {
         initComponents();
+        apiService = RetrofitConfig.getApiService();
+        clientes = new ArrayList<>();
+        
+        listarClientes();
         refreshListas();
 
-        
     }
 
     /**
@@ -176,43 +178,41 @@ public class ClientePanel extends javax.swing.JFrame {
         });
     }
     private void listarClientes() {
-                // Simulate an API call to load products
-       ApiService apiService = RetrofitConfig.getApiService();
+        ApiService apiService = RetrofitConfig.getApiService();
         apiService.listarClientes().enqueue(new Callback<List<Cliente>>() {
             @Override
             public void onResponse(Call<List<Cliente>> call, Response<List<Cliente>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    List<Cliente> clientes = response.body();
+                    clientes = response.body();
 
-                   SwingUtilities.invokeLater(() -> {
-                       // Criar modelo de tabela com as colunas apropriadas
+                    SwingUtilities.invokeLater(() -> {
                         DefaultTableModel defaultTableModel = new DefaultTableModel();
                         defaultTableModel.addColumn("Nome");
-                       defaultTableModel.addColumn("Telefone");
-                      defaultTableModel.addColumn("Email");
+                        defaultTableModel.addColumn("email");
+                        defaultTableModel.addColumn("Telefone");
 
-                       // Adicionar os clientes ao modelo da tabela
-                        for (Cliente cliente : clientes) {
-                           defaultTableModel.addRow(new Object[]{
-                               cliente.getNome(), cliente.getTelefone(), cliente.getEmail()
-                           });
+                        for (Cliente c : clientes) {
+                            defaultTableModel.addRow(new Object[]{
+                                c.getNome(), c.getEmail(), c.getTelefone()
+                            });
                         }
-                     // Definir o modelo da tabela de clientes
-                        clienteTableModel.setModel(defaultTableModel);                    
-                    });
-                  registrarLog("Obtenção dos clientes", "Falha");
-              } else {
-                   // Se ocorrer um erro na resposta da API, exibir uma mensagem de erro
-                   JOptionPane.showMessageDialog(ClientePanel.this, "Failed to load products.", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-           }
 
-           @Override
+                        clienteTableModel.setModel(defaultTableModel);
+                    });
+
+                    registrarLog("Obtenção dos clientes", "Sucesso");
+                } else {
+                    JOptionPane.showMessageDialog(ClientePanel.this, "Failed to load clients.", "Error", JOptionPane.ERROR_MESSAGE);
+                    registrarLog("Obtenção dos clientes", "Falha");
+                }
+            }
+
+            @Override
             public void onFailure(Call<List<Cliente>> call, Throwable t) {
-                // Em caso de falha na chamada à API, exibir uma mensagem de erro
                 JOptionPane.showMessageDialog(ClientePanel.this, "Error: " + t.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-           }
-       });
+                registrarLog("Obtenção dos clientes", "Falha");
+            }
+        });
     }
 
     private void registrarLog(String operacao, String status) {
@@ -226,16 +226,16 @@ public class ClientePanel extends javax.swing.JFrame {
             e.printStackTrace();
         }
     }
-    public Cliente getClienteSelect(){
-        int select = clienteTableModel.getSelectedRow();
-       if (select == -1) {
-            return null; // Nenhuma linha selecionada
-        }
-        String nome = (String) clienteTableModel.getValueAt(select, 0);
-        String telefone = (String) clienteTableModel.getValueAt(select, 1);
-        String email = (String) clienteTableModel.getValueAt(select, 2);
-        return new Cliente(nome,telefone,email);
-    }
+//    public Cliente getClienteSelect(){
+//        int select = clienteTableModel.getSelectedRow();
+//       if (select == -1) {
+//            return null; // Nenhuma linha selecionada
+//        }
+//        String nome = (String) clienteTableModel.getValueAt(select, 0);
+//        String telefone = (String) clienteTableModel.getValueAt(select, 1);
+//        String email = (String) clienteTableModel.getValueAt(select, 2);
+//        return new Cliente(nome,telefone,email);
+//    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable clienteTableModel;
     private javax.swing.JButton jButton1;

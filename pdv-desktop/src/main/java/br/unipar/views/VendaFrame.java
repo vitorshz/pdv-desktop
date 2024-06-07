@@ -356,8 +356,7 @@ public class VendaFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_jTextField1ActionPerformed
 
     private void btnAddClienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddClienteActionPerformed
-        ClientePanel c = new ClientePanel();
-        c.show();
+        new ClientePanel().setVisible(true);
     }//GEN-LAST:event_btnAddClienteActionPerformed
 
     private void btnFimVendaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFimVendaActionPerformed
@@ -505,7 +504,7 @@ public class VendaFrame extends javax.swing.JFrame {
 
         Venda venda = new Venda();
         venda.setObservacoes(observacaotextfield.getText());
-        venda.setData(LocalDate.now());
+        venda.setData(LocalDateTime.now());
         venda.setClienteId(cliente.getId());
 
         apiService.criarVenda(venda).enqueue(new Callback<Venda>() {
