@@ -4,6 +4,9 @@
  */
 package br.unipar.views;
 
+import DTOItemVneda.ItemVendaDTOTest;
+import DTOItemVneda.VendaDTO;
+import DTOItemVneda.VendaResponse;
 import br.unipar.models.Cliente;
 import br.unipar.models.ItemVenda;
 import br.unipar.models.Produto;
@@ -29,7 +32,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
-import okhttp3.Request;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -507,82 +509,62 @@ public class VendaFrame extends javax.swing.JFrame {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
                 String formattedDateTime = now.format(formatter);
                 venda.setData(formattedDateTime);
+                VendaDTO vendatest = new VendaDTO();
+                vendatest.setClienteId(cliente.getId());
+                vendatest.setData(formattedDateTime);
+                 // Crie uma lista de DTOs de ItemVendaDTOTest
+            List<ItemVendaDTOTest> itensVendaDTOTest = new ArrayList<>();
+            for (ItemVenda itemVenda : itensVenda) {
+                ItemVendaDTOTest itemVendaDTOTest = new ItemVendaDTOTest(
+                        itemVenda.getProdutoId(),
+                        itemVenda.getValorUnitario().doubleValue(),
+                        itemVenda.getQuantidade()
+                );
+                itensVendaDTOTest.add(itemVendaDTOTest);
+            }
+                vendatest.setItensVenda(itensVendaDTOTest);
+                vendatest.setObservacoes("ada");
+               
 
                 // Faça a chamada assíncrona para criar a venda
-                apiService.criarVenda(venda).enqueue(new Callback<Venda>() {
-                    @Override
-                    public void onResponse(Call<Venda> call, Response<Venda> response) {
-                        if (response.isSuccessful()) {
-                            Venda vendaCriada = response.body();
-                            // Adicione os itens à venda criada
-                            adicionarItensVendaAssincronamente(vendaCriada);
-                            // Exiba uma mensagem de sucesso
-                            SwingUtilities.invokeLater(()
-                                    -> JOptionPane.showMessageDialog(VendaFrame.this, "Venda realizada com sucesso!")
-                            );
-                            registrarLog("Inserção de venda", "Sucesso");
-                        } else {
-                            // Em caso de resposta de erro, exiba uma mensagem de erro e registre os detalhes do erro
-                            String errorMessage = "Erro ao criar venda: " + response.code() + " - " + response.message();
-                            logErrorDetails(call.request(), response);
-                            SwingUtilities.invokeLater(()
-                                    -> JOptionPane.showMessageDialog(VendaFrame.this, errorMessage)
-                            );
-                            registrarLog("Inserção de venda", errorMessage);
-                        }
-                    }
+                apiService.criarVenda(vendatest).enqueue(new Callback<VendaResponse>() {
+    @Override
+    public void onResponse(Call<VendaResponse> call, Response<VendaResponse> response) {
+        if (response.isSuccessful()) {
+            VendaResponse vendaCriada = response.body();
+            SwingUtilities.invokeLater(() ->
+                    JOptionPane.showMessageDialog(VendaFrame.this, "Venda realizada com sucesso!")
+            );
+            registrarLog("Inserção de venda", "Sucesso");
+        } else {
+            String errorMessage = "Erro ao criar venda: " + response.code() + " - " + response.message();
+      
+            SwingUtilities.invokeLater(() ->
+                    JOptionPane.showMessageDialog(VendaFrame.this, errorMessage)
+            );
+            registrarLog("Inserção de venda", errorMessage);
+        }
+    }
 
-                    @Override
-                    public void onFailure(Call<Venda> call, Throwable t) {
-                        // Em caso de falha na chamada, exiba uma mensagem de erro e registre os detalhes do erro
-                        String errorMessage = "Erro ao criar venda: " + t.getMessage();
-                        logErrorDetails(call.request(), null);
-                        SwingUtilities.invokeLater(()
-                                -> JOptionPane.showMessageDialog(VendaFrame.this, errorMessage)
-                        );
-                        registrarLog("Inserção de venda", errorMessage);
-                    }
-                });
+    @Override
+    public void onFailure(Call<VendaResponse> call, Throwable t) {
+        String errorMessage = "Erro ao criar venda: " + t.getMessage();
+      
+        SwingUtilities.invokeLater(() ->
+                JOptionPane.showMessageDialog(VendaFrame.this, errorMessage)
+        );
+        registrarLog("Inserção de venda", errorMessage);
+    }
+});
             } finally {
                 executor.shutdown();
             }
         });
     }
    
-    private void logErrorDetails(Request request, Response<?> response) {
-        String logFilePath = "erros.txt";
-        try (PrintWriter writer = new PrintWriter(new FileWriter(logFilePath, true))) {
-            LocalDateTime now = LocalDateTime.now();
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            String dataHora = now.format(formatter);
-            writer.println(dataHora + " - Request: " + request);
-            if (response != null) {
-                writer.println(dataHora + " - Response: " + response);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+   
 
-    private void adicionarItensVendaAssincronamente(Venda venda) {
-        ExecutorService executor = Executors.newCachedThreadPool();
-        for (ItemVendaDTO itemVendaDTO : venda.getItensvenda()) {
-            apiService.adicionarItemVenda(itemVendaDTO).enqueue(new Callback<ItemVenda>() {
-                @Override
-                public void onResponse(Call<ItemVenda> call, Response<ItemVenda> response) {
-                    if (!response.isSuccessful()) {
-                        JOptionPane.showMessageDialog(VendaFrame.this, "Erro ao adicionar item de venda.");
-                    }
-                }
 
-                @Override
-                public void onFailure(Call<ItemVenda> call, Throwable t) {
-                    JOptionPane.showMessageDialog(VendaFrame.this, "Erro ao adicionar item de venda.");
-                }
-            });
-        }
-        executor.shutdown();
-    }
 
 
     private void refreshListas(){

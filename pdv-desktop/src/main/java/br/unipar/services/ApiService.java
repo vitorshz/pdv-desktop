@@ -1,5 +1,7 @@
 package br.unipar.services;
 
+import DTOItemVneda.VendaDTO;
+import DTOItemVneda.VendaResponse;
 import br.unipar.models.Cliente;
 import br.unipar.models.ItemVenda;
 import br.unipar.models.Produto;
@@ -24,7 +26,7 @@ public interface ApiService {
     Call<List<Produto>> listarProdutos();
 
     @POST("vendas")
-    Call<Venda> criarVenda(@Body Venda venda);
+    Call<VendaResponse> criarVenda(@Body VendaDTO venda);
 
     @POST("itens-venda")
     Call<ItemVenda> adicionarItemVenda(@Body ItemVendaDTO itemVenda);
