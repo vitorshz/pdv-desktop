@@ -10,22 +10,26 @@ import br.unipar.models.Produto;
 import br.unipar.models.Venda;
 import br.unipar.retrofit.RetrofitConfig;
 import br.unipar.services.ApiService;
+import dto.ItemVendaDTO;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
+import okhttp3.Request;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -37,9 +41,10 @@ import retrofit2.Response;
 public class VendaFrame extends javax.swing.JFrame {
     private JTable clientesTable;
     private ApiService apiService;
-    private List<Cliente> clientes;
+    private List<ItemVenda> itensVenda;
     private List<Produto> produtos;
     private DefaultTableModel itensVendaModel;
+    private ClientePanel clientePanel;
     /**
      * Creates new form VendaFrame
      */
@@ -47,8 +52,9 @@ public class VendaFrame extends javax.swing.JFrame {
         initComponents();
         apiService = RetrofitConfig.getApiService();
         
+        itensVenda = new ArrayList<>();
         produtos = new ArrayList<>();
-        
+        clientePanel = new ClientePanel(this); 
         listarProdutos();
         refreshListas();
 
@@ -67,7 +73,7 @@ public class VendaFrame extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        textFieldCliente = new javax.swing.JTextField();
         btnAddCliente = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
@@ -93,11 +99,11 @@ public class VendaFrame extends javax.swing.JFrame {
         jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
         jLabel2.setText("Cliente");
 
-        jTextField1.setEditable(false);
-        jTextField1.setText("cliente selecionado");
-        jTextField1.addActionListener(new java.awt.event.ActionListener() {
+        textFieldCliente.setEditable(false);
+        textFieldCliente.setText("cliente selecionado");
+        textFieldCliente.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField1ActionPerformed(evt);
+                textFieldClienteActionPerformed(evt);
             }
         });
 
@@ -116,7 +122,7 @@ public class VendaFrame extends javax.swing.JFrame {
                 .addGap(12, 12, 12)
                 .addComponent(jLabel2)
                 .addGap(12, 12, 12)
-                .addComponent(jTextField1, javax.swing.GroupLayout.DEFAULT_SIZE, 159, Short.MAX_VALUE)
+                .addComponent(textFieldCliente, javax.swing.GroupLayout.DEFAULT_SIZE, 159, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnAddCliente)
                 .addGap(12, 12, 12))
@@ -127,7 +133,7 @@ public class VendaFrame extends javax.swing.JFrame {
                 .addGap(12, 12, 12)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(textFieldCliente, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnAddCliente))
                 .addContainerGap(12, Short.MAX_VALUE))
         );
@@ -339,16 +345,18 @@ public class VendaFrame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
+    private void textFieldClienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textFieldClienteActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField1ActionPerformed
+    }//GEN-LAST:event_textFieldClienteActionPerformed
 
     private void btnAddClienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddClienteActionPerformed
-        new ClientePanel().setVisible(true);
+        clientePanel = new ClientePanel(this); // Atribui a nova instância de ClientePanel ao campo clientePanel
+        clientePanel.setVisible(true); // Torna o clientePanel visível
     }//GEN-LAST:event_btnAddClienteActionPerformed
 
     private void btnFimVendaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFimVendaActionPerformed
-//        realizarVenda();
+        Cliente cliente = clientePanel.getSelectedCliente();
+        realizarVendaAssincrona(cliente);
     }//GEN-LAST:event_btnFimVendaActionPerformed
 
     private void jTextField2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField2ActionPerformed
@@ -449,98 +457,117 @@ public class VendaFrame extends javax.swing.JFrame {
         // Adicionar o item na tabela de itens da venda
         if (itensVendaModel == null) {
             itensVendaModel = new DefaultTableModel();
+            itensVendaModel.addColumn("ID");
             itensVendaModel.addColumn("Descrição");
             itensVendaModel.addColumn("Quantidade");
             itensVendaModel.addColumn("Valor Unitário");
             itensVendaModel.addColumn("Valor Total");
         }
 
-        itensVendaModel.addRow(new Object[]{produto.getDescricao(), quantidade, produto.getValor(), valorTotal});
+        itensVendaModel.addRow(new Object[]{produto.getId(),produto.getDescricao(), quantidade, produto.getValor(), valorTotal});
         
         itemVendaModel.setModel(itensVendaModel);
         
         // Adicionar o item na lista de itens da venda para posterior envio ao servidor
         ItemVenda itemVenda = new ItemVenda();
-        itemVenda.setProdutoId(produto); // Aqui você define o ID do produto
+        itemVenda.setProdutoId(produto.getId()); // Aqui você define o ID do produto
         itemVenda.setQuantidade(quantidade);
         itemVenda.setValorUnitario(produto.getValor());
         itemVenda.setValorTotal(valorTotal);
         // Adicione o itemVenda à sua lista de itens de venda, que você pode enviar ao servidor quando realizar a venda
-        // listaItensVenda.add(itemVenda);
+        itensVenda.add(itemVenda);
         
     }
-
-    private void realizarVenda() {
-        int clienteIndex = clientesTable.getSelectedRow();
-
-        if (clienteIndex == -1) {
+    private void realizarVendaAssincrona(Cliente cliente) {
+        if (cliente == null) {
             JOptionPane.showMessageDialog(this, "Selecione um cliente.");
             return;
         }
 
-        Cliente cliente = clientes.get(clienteIndex);
-
-
-        BigDecimal totalVenda = BigDecimal.ZERO;
-        for (int i = 0; i < itensVendaModel.getRowCount(); i++) {
-            totalVenda = totalVenda.add((BigDecimal) itensVendaModel.getValueAt(i, 3));
-        }
-
-        Venda venda = new Venda();
-//        venda.setObservacoes(observacaotextfield.getText()); fazer um JOPtionPane de opcao no fim da venda
-        venda.setData(LocalDateTime.now());
-        venda.setClienteId(cliente);
-
-        apiService.criarVenda(venda).enqueue(new Callback<Venda>() {
-            @Override
-            public void onResponse(Call<Venda> call, Response<Venda> response) {
-                if (response.isSuccessful()) {
-                    Venda vendaCriada = response.body();
-                    for (int i = 0; i < itensVendaModel.getRowCount(); i++) {
-                        adicionarItemVenda(vendaCriada, i);
-                    }
-                    JOptionPane.showMessageDialog(VendaFrame.this, "Venda realizada com sucesso!");
-                    registrarLog("Inserção de venda", "Sucesso");
-                } else {
-                    JOptionPane.showMessageDialog(VendaFrame.this, "Erro ao criar venda.");
-                    registrarLog("Inserção de venda", "Falha");
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(() -> {
+            try {
+                // Crie uma lista de DTOs de ItemVenda
+                List<ItemVendaDTO> itensVendaDTO = new ArrayList<>();
+                for (ItemVenda itemVenda : itensVenda) {
+                    ItemVendaDTO itemVendaDTO = new ItemVendaDTO(
+                            itemVenda.getQuantidade(),
+                            itemVenda.getValorUnitario(),
+                            itemVenda.getProdutoId()
+                    );
+                    itensVendaDTO.add(itemVendaDTO);
                 }
-            }
 
-            @Override
-            public void onFailure(Call<Venda> call, Throwable t) {
-                JOptionPane.showMessageDialog(VendaFrame.this, "Erro ao criar venda.");
-                registrarLog("Inserção de venda", "Falha");
+                // Criar uma venda na API
+                Venda venda = new Venda();
+                venda.setClienteId(cliente.getId());
+                venda.setItensvenda(itensVendaDTO);
+                // Defina a data atual formatada para o formato desejado
+                LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+                String formattedDateTime = now.format(formatter);
+                venda.setData(formattedDateTime);
+
+                // Faça a chamada assíncrona para criar a venda
+                apiService.criarVenda(venda).enqueue(new Callback<Venda>() {
+                    @Override
+                    public void onResponse(Call<Venda> call, Response<Venda> response) {
+                        if (response.isSuccessful()) {
+                            Venda vendaCriada = response.body();
+                            // Adicione os itens à venda criada
+                            adicionarItensVendaAssincronamente(vendaCriada);
+                            // Exiba uma mensagem de sucesso
+                            SwingUtilities.invokeLater(()
+                                    -> JOptionPane.showMessageDialog(VendaFrame.this, "Venda realizada com sucesso!")
+                            );
+                            registrarLog("Inserção de venda", "Sucesso");
+                        } else {
+                            // Em caso de resposta de erro, exiba uma mensagem de erro e registre os detalhes do erro
+                            String errorMessage = "Erro ao criar venda: " + response.code() + " - " + response.message();
+                            logErrorDetails(call.request(), response);
+                            SwingUtilities.invokeLater(()
+                                    -> JOptionPane.showMessageDialog(VendaFrame.this, errorMessage)
+                            );
+                            registrarLog("Inserção de venda", errorMessage);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Venda> call, Throwable t) {
+                        // Em caso de falha na chamada, exiba uma mensagem de erro e registre os detalhes do erro
+                        String errorMessage = "Erro ao criar venda: " + t.getMessage();
+                        logErrorDetails(call.request(), null);
+                        SwingUtilities.invokeLater(()
+                                -> JOptionPane.showMessageDialog(VendaFrame.this, errorMessage)
+                        );
+                        registrarLog("Inserção de venda", errorMessage);
+                    }
+                });
+            } finally {
+                executor.shutdown();
             }
         });
     }
-    private void refreshListas(){
-        // Atualizar automaticamente os clientes e produtos a cada 5 minutos
-        Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                
-                listarProdutos();
+   
+    private void logErrorDetails(Request request, Response<?> response) {
+        String logFilePath = "erros.txt";
+        try (PrintWriter writer = new PrintWriter(new FileWriter(logFilePath, true))) {
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String dataHora = now.format(formatter);
+            writer.println(dataHora + " - Request: " + request);
+            if (response != null) {
+                writer.println(dataHora + " - Response: " + response);
             }
-        }, 0, 5 * 60 * 1000); // Atualiza a cada 5 minutos (5 * 60 * 1000 ms)
-
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    private void adicionarItemVenda(Venda venda, int rowIndex) {
-        Produto produto = produtos.stream()
-                .filter(p -> p.getDescricao().equals(itensVendaModel.getValueAt(rowIndex, 0)))
-                .findFirst().orElse(null);
-
-        if (produto != null) {
-            ItemVenda itemVenda = new ItemVenda();
-            itemVenda.setVendaId(venda);
-            itemVenda.setProdutoId(produto);
-            itemVenda.setQuantidade((Integer) itensVendaModel.getValueAt(rowIndex, 1));
-            itemVenda.setValorUnitario((BigDecimal) itensVendaModel.getValueAt(rowIndex, 2));
-            itemVenda.setValorTotal((BigDecimal) itensVendaModel.getValueAt(rowIndex, 3));
-
-            apiService.adicionarItemVenda(itemVenda).enqueue(new Callback<ItemVenda>() {
+    private void adicionarItensVendaAssincronamente(Venda venda) {
+        ExecutorService executor = Executors.newCachedThreadPool();
+        for (ItemVendaDTO itemVendaDTO : venda.getItensvenda()) {
+            apiService.adicionarItemVenda(itemVendaDTO).enqueue(new Callback<ItemVenda>() {
                 @Override
                 public void onResponse(Call<ItemVenda> call, Response<ItemVenda> response) {
                     if (!response.isSuccessful()) {
@@ -554,7 +581,25 @@ public class VendaFrame extends javax.swing.JFrame {
                 }
             });
         }
+        executor.shutdown();
     }
+
+
+    private void refreshListas(){
+        // Atualizar automaticamente os clientes e produtos a cada 5 minutos
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                
+                listarProdutos();
+            }
+        }, 0, 5 * 60 * 1000); // Atualiza a cada 5 minutos (5 * 60 * 1000 ms)
+
+    }
+
+    
+    
     private void registrarLog(String operacao, String status) {
         String logFilePath = "log.txt";
         try (PrintWriter writer = new PrintWriter(new FileWriter(logFilePath, true))) {
@@ -567,11 +612,8 @@ public class VendaFrame extends javax.swing.JFrame {
         }
     }
     
-    private void abrirPanel(JPanel panel) {
-        getContentPane().removeAll();
-        getContentPane().add(panel);
-        revalidate();
-        repaint();
+    public void setClienteFields(Cliente cliente) {
+        textFieldCliente.setText(cliente.getNome());
     }
     /**
      * @param args the command line arguments
@@ -625,8 +667,8 @@ public class VendaFrame extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
     private javax.swing.JTable produtosTable;
+    private javax.swing.JTextField textFieldCliente;
     // End of variables declaration//GEN-END:variables
 }

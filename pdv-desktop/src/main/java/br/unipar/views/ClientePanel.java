@@ -31,12 +31,14 @@ public class ClientePanel extends javax.swing.JFrame {
     
     private ApiService apiService;
     private List<Cliente> clientes;
+    private VendaFrame vendaFrame;
 
     /**
      * Creates new form ClientePanel
      */
-    public ClientePanel() {
+    public ClientePanel(VendaFrame vendaFrame) {
         initComponents();
+        this.vendaFrame = vendaFrame;
         apiService = RetrofitConfig.getApiService();
         clientes = new ArrayList<>();
         
@@ -67,17 +69,17 @@ public class ClientePanel extends javax.swing.JFrame {
 
         clienteTableModel.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null}
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
             },
             new String [] {
-                "Nome", "Telefone", "Email"
+                "ID", "Nome", "Telefone", "Email"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false
+                false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -87,11 +89,12 @@ public class ClientePanel extends javax.swing.JFrame {
         clienteTableModel.setColumnSelectionAllowed(true);
         clienteTableModel.getTableHeader().setReorderingAllowed(false);
         jScrollPane1.setViewportView(clienteTableModel);
-        clienteTableModel.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        clienteTableModel.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         if (clienteTableModel.getColumnModel().getColumnCount() > 0) {
             clienteTableModel.getColumnModel().getColumn(0).setResizable(false);
             clienteTableModel.getColumnModel().getColumn(1).setResizable(false);
             clienteTableModel.getColumnModel().getColumn(2).setResizable(false);
+            clienteTableModel.getColumnModel().getColumn(3).setResizable(false);
         }
 
         jButton1.setText("Selecionar");
@@ -149,7 +152,16 @@ public class ClientePanel extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
+        int clienteIndex = clienteTableModel.getSelectedRow();
+
+        if (clienteIndex == -1) {
+            JOptionPane.showMessageDialog(this, "Selecione um cliente.");
+            return;
+        }
+
+        Cliente cliente = clientes.get(clienteIndex);
+        vendaFrame.setClienteFields(cliente);
+        this.dispose();
     }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
@@ -182,7 +194,9 @@ public class ClientePanel extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new ClientePanel().setVisible(true);
+                VendaFrame vendaFrame = new VendaFrame();
+                vendaFrame.setVisible(true);
+                new ClientePanel(vendaFrame).setVisible(true);
             }
         });
     }
@@ -196,13 +210,14 @@ public class ClientePanel extends javax.swing.JFrame {
 
                     SwingUtilities.invokeLater(() -> {
                         DefaultTableModel defaultTableModel = new DefaultTableModel();
+                        defaultTableModel.addColumn("ID");
                         defaultTableModel.addColumn("Nome");
                         defaultTableModel.addColumn("email");
                         defaultTableModel.addColumn("Telefone");
 
                         for (Cliente c : clientes) {
                             defaultTableModel.addRow(new Object[]{
-                                c.getNome(), c.getEmail(), c.getTelefone()
+                               c.getId(), c.getNome(), c.getEmail(), c.getTelefone()
                             });
                         }
 
@@ -235,16 +250,39 @@ public class ClientePanel extends javax.swing.JFrame {
             e.printStackTrace();
         }
     }
-//    public Cliente getClienteSelect(){
-//        int select = clienteTableModel.getSelectedRow();
-//       if (select == -1) {
-//            return null; // Nenhuma linha selecionada
-//        }
-//        String nome = (String) clienteTableModel.getValueAt(select, 0);
-//        String telefone = (String) clienteTableModel.getValueAt(select, 1);
-//        String email = (String) clienteTableModel.getValueAt(select, 2);
-//        return new Cliente(nome,telefone,email);
-//    }
+    public Cliente getSelectedCliente() {
+        int selectedRow = clienteTableModel.getSelectedRow();
+        if (selectedRow != -1) {
+
+            Cliente cliente = new Cliente();
+            Object idValue = clienteTableModel.getValueAt(selectedRow, 0);
+            if (idValue instanceof Long) {
+                cliente.setId((Long) idValue);
+            } else if (idValue instanceof String) {
+                // Tratar o caso em que o valor é uma String e tentar converter para Long
+                try {
+                    cliente.setId(Long.parseLong((String) idValue));
+                } catch (NumberFormatException e) {
+                    // Lidar com o caso em que não é possível converter para Long
+                    e.printStackTrace();
+                    return null; // Ou outra ação apropriada, como lançar uma exceção
+                }
+            } else {
+                // Lidar com o caso em que o valor não é nem Long nem String
+                return null; // Ou outra ação apropriada, como lançar uma exceção
+            }
+
+            cliente.setNome((String) clienteTableModel.getValueAt(selectedRow, 1));
+            cliente.setEmail((String) clienteTableModel.getValueAt(selectedRow, 2));
+            cliente.setTelefone((String) clienteTableModel.getValueAt(selectedRow, 3));
+            return cliente;
+        }
+        return null;
+    }
+    public javax.swing.JTable getClientesTable() {
+        return clienteTableModel;
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable clienteTableModel;
     private javax.swing.JButton jButton1;

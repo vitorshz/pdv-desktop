@@ -16,7 +16,7 @@ public class ItemVenda implements Serializable{
     @SerializedName("fk_Venda_id")
     private Venda vendaId;
     @SerializedName("fk_Produto_id")
-    private Produto produtoId;
+    private Long produtoId;
 
     public Long getId() {
         return id;
@@ -58,12 +58,13 @@ public class ItemVenda implements Serializable{
         this.vendaId = vendaId;
     }
 
-    public Produto getProdutoId() {
+    public Long getProdutoId() {
         return produtoId;
     }
 
-    public void setProdutoId(Produto produtoId) {
+    public void setProdutoId(Long produtoId) {
         this.produtoId = produtoId;
     }
+
     
 }

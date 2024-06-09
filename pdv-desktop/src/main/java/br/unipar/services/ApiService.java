@@ -4,6 +4,7 @@ import br.unipar.models.Cliente;
 import br.unipar.models.ItemVenda;
 import br.unipar.models.Produto;
 import br.unipar.models.Venda;
+import dto.ItemVendaDTO;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
@@ -26,7 +27,7 @@ public interface ApiService {
     Call<Venda> criarVenda(@Body Venda venda);
 
     @POST("itens-venda")
-    Call<ItemVenda> adicionarItemVenda(@Body ItemVenda itemVenda);
+    Call<ItemVenda> adicionarItemVenda(@Body ItemVendaDTO itemVenda);
     // falta ver como recuperar o id da url
     @GET("itens-venda/venda/{id}")
     Call<List<ItemVenda>> listarItemVendaDaVenda(@Path("id") Long id);

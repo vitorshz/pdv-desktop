@@ -1,9 +1,12 @@
 package br.unipar.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.google.gson.annotations.SerializedName;
+import dto.ItemVendaDTO;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.util.List;
+
 
 public class Venda implements Serializable{
     @SerializedName("id")
@@ -11,12 +14,13 @@ public class Venda implements Serializable{
     @SerializedName("observacoes")
     private String observacoes;
     @SerializedName("data")
-    private LocalDateTime data;
+    private String data;
     @SerializedName("total")
-    private BigDecimal total;
+    private Double total;
     @SerializedName("fk_Cliente_id")
-    private Cliente clienteId;
-
+    private Long clienteId;
+    @SerializedName("itensVenda")
+    private List<ItemVendaDTO> itensvenda;
     public Long getId() {
         return id;
     }
@@ -33,29 +37,42 @@ public class Venda implements Serializable{
         this.observacoes = observacoes;
     }
 
-    public LocalDateTime getData() {
+    public String getData() {
         return data;
     }
 
-    public void setData(LocalDateTime data) {
+    public void setData(String data) {
         this.data = data;
-    }    
+    }
 
-    public BigDecimal getTotal() {
+    public Double getTotal() {
         return total;
     }
 
-    public void setTotal(BigDecimal total) {
+    public void setTotal(Double total) {
         this.total = total;
     }
+    
+    
 
-    public Cliente getClienteId() {
+    public Long getClienteId() {
         return clienteId;
     }
 
-    public void setClienteId(Cliente clienteId) {
+    public void setClienteId(Long clienteId) {
         this.clienteId = clienteId;
     }
+
+    public List<ItemVendaDTO> getItensvenda() {
+        return itensvenda;
+    }
+
+    public void setItensvenda(List<ItemVendaDTO> itensvenda) {
+        this.itensvenda = itensvenda;
+    }
+
+  
+    
 
     
 }
