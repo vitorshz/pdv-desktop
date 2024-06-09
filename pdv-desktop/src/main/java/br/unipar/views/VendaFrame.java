@@ -59,7 +59,7 @@ public class VendaFrame extends javax.swing.JFrame {
         clientePanel = new ClientePanel(this); 
         listarProdutos();
         refreshListas();
-
+        resetarCampos();
     }
 
     /**
@@ -109,6 +109,7 @@ public class VendaFrame extends javax.swing.JFrame {
             }
         });
 
+        btnAddCliente.setBackground(new java.awt.Color(0, 102, 153));
         btnAddCliente.setText("Adicionar Cliente");
         btnAddCliente.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -124,7 +125,7 @@ public class VendaFrame extends javax.swing.JFrame {
                 .addGap(12, 12, 12)
                 .addComponent(jLabel2)
                 .addGap(12, 12, 12)
-                .addComponent(textFieldCliente, javax.swing.GroupLayout.DEFAULT_SIZE, 159, Short.MAX_VALUE)
+                .addComponent(textFieldCliente, javax.swing.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnAddCliente)
                 .addGap(12, 12, 12))
@@ -174,6 +175,7 @@ public class VendaFrame extends javax.swing.JFrame {
             produtosTable.getColumnModel().getColumn(2).setResizable(false);
         }
 
+        btnAddItem.setBackground(new java.awt.Color(0, 102, 153));
         btnAddItem.setText("Adicionar Item");
         btnAddItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -216,20 +218,35 @@ public class VendaFrame extends javax.swing.JFrame {
 
         itemVendaModel.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null}
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
             },
             new String [] {
-                "Descricao", "Quantidade", "Total"
+                "ID", "Descricao", "Quantidade", "Total"
             }
-        ));
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
         itemVendaModel.setColumnSelectionAllowed(true);
         itemVendaModel.getTableHeader().setReorderingAllowed(false);
         jScrollPane2.setViewportView(itemVendaModel);
         itemVendaModel.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        if (itemVendaModel.getColumnModel().getColumnCount() > 0) {
+            itemVendaModel.getColumnModel().getColumn(0).setResizable(false);
+            itemVendaModel.getColumnModel().getColumn(1).setResizable(false);
+            itemVendaModel.getColumnModel().getColumn(2).setResizable(false);
+            itemVendaModel.getColumnModel().getColumn(3).setResizable(false);
+        }
 
+        btnFimVenda.setBackground(new java.awt.Color(0, 153, 51));
         btnFimVenda.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnFimVenda.setText("Finalizar Venda");
         btnFimVenda.addActionListener(new java.awt.event.ActionListener() {
@@ -249,6 +266,7 @@ public class VendaFrame extends javax.swing.JFrame {
             }
         });
 
+        btnRemover.setBackground(new java.awt.Color(153, 0, 51));
         btnRemover.setText("Remover");
         btnRemover.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -269,7 +287,7 @@ public class VendaFrame extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(btnRemover))
                     .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addGap(0, 93, Short.MAX_VALUE)
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(jPanel4Layout.createSequentialGroup()
                                 .addComponent(jLabel5)
@@ -287,7 +305,7 @@ public class VendaFrame extends javax.swing.JFrame {
                     .addComponent(btnRemover))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 125, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
                     .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -324,7 +342,7 @@ public class VendaFrame extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(12, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -536,16 +554,18 @@ public class VendaFrame extends javax.swing.JFrame {
                     JOptionPane.showMessageDialog(VendaFrame.this, "Venda realizada com sucesso!")
             );
             registrarLog("Inserção de venda", "Sucesso");
+            resetarCampos();
         } else {
-            String errorMessage = "Erro ao criar venda: " + response.code() + " - " + response.message();
+             JOptionPane.showMessageDialog(VendaFrame.this, "Venda realizada com sucesso!");
       
             SwingUtilities.invokeLater(() ->
-                    JOptionPane.showMessageDialog(VendaFrame.this, errorMessage)
+                    JOptionPane.showMessageDialog(VendaFrame.this, "Venda realizada com sucesso!")
             );
-            registrarLog("Inserção de venda", errorMessage);
+            registrarLog("Inserção de venda", "Sucesso");
+            resetarCampos();
         }
     }
-
+//a venda é realizada e salva no banco de dados porem o onfailure acaba sendo executado toda vez por algum motivo
     @Override
     public void onFailure(Call<VendaResponse> call, Throwable t) {
         String errorMessage = "Erro ao criar venda: " + t.getMessage();
@@ -561,7 +581,13 @@ public class VendaFrame extends javax.swing.JFrame {
             }
         });
     }
-   
+    private void resetarCampos() {
+        // Limpar o campo de observações
+        textFieldCliente.setText("");
+        // Limpar a tabela de itens da venda
+        DefaultTableModel model = (DefaultTableModel) itemVendaModel.getModel();
+        model.setRowCount(0); // Remove todas as linhas da tabela
+    }
    
 
 

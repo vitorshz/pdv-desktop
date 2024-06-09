@@ -13,7 +13,7 @@ import java.util.List;
  */
 public class VendaResponse {
     private String observacoes;
-    private LocalDateTime data;
+    private String data;
     private Double total;
     private Long clienteId;
     private List<ItemVendaDTOTest> itensVenda;
@@ -21,7 +21,7 @@ public class VendaResponse {
     // Construtores, getters e setters
     public VendaResponse() {}
 
-    public VendaResponse(String observacoes,  LocalDateTime data,  Double total,  Long clienteId, List<ItemVendaDTOTest> itensVenda) {
+    public VendaResponse(String observacoes,  String data,  Double total,  Long clienteId, List<ItemVendaDTOTest> itensVenda) {
         this.observacoes = observacoes;
         this.data = data;
         this.total = total;
@@ -37,11 +37,11 @@ public class VendaResponse {
         this.observacoes = observacoes;
     }
 
-    public LocalDateTime getData() {
+    public String getData() {
         return data;
     }
 
-    public void setData(LocalDateTime data) {
+    public void setData(String data) {
         this.data = data;
     }
 
